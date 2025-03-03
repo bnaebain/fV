@@ -29,17 +29,19 @@ def get_random_question():
     conn.close()
     
     if result:
-        return f"({result[0]})\n{result[1]}"  # Format: (Topic) Question
+        return result[0], result[1]  # Return (ID, question text)
     else:
-        return "No more questions!"
+        return None, "No more questions!"
+
 
 def get_all_questions():
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
-    cursor.execute("SELECT question FROM questions")
-    questions = [row[0] for row in cursor.fetchall()]
+    cursor.execute("SELECT number, question FROM questions")
+    questions = [(row[0], row[1]) for row in cursor.fetchall()]  # Return list of (ID, question)
     conn.close()
     return questions
+
 
 # Initialize display
 disp = LCD_1in44.LCD()
@@ -81,12 +83,13 @@ def display_text(text):
     
     disp.LCD_ShowImage(image, 0, 0)
 
-def mark_question_answered(question_text):
+def mark_question_answered(question_id):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
-    cursor.execute("UPDATE questions SET answered = 1 WHERE question = ?", (question_text,))
+    cursor.execute("UPDATE questions SET answered = 1 WHERE number = ?", (question_id,))
     conn.commit()
     conn.close()
+
 
 def reset_questions():
     conn = sqlite3.connect(db_file)
@@ -98,10 +101,6 @@ def reset_questions():
 def main():
     global current_index
 
-    # Setup GPIO, LCD, etc.
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUTTONS, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
     disp.LCD_Clear()
     display_text("Forced Vulnerability\n\n\nPress any button to start")
 
@@ -110,42 +109,43 @@ def main():
 
     questions = get_all_questions()
     current_index = 0
-    current_question = questions[current_index]
+    current_id, current_text = questions[current_index]  # Store ID & text
 
-    display_text(current_question)
+    display_text(current_text)
 
     while True:
         if GPIO.input(KEY_LEFT_PIN) == 0:  # Previous question
             current_index = (current_index - 1) % len(questions)
-            current_question = questions[current_index]
-            display_text(current_question)
+            current_id, current_text = questions[current_index]
+            display_text(current_text)
             while GPIO.input(KEY_LEFT_PIN) == 0:
                 pass
 
         elif GPIO.input(KEY_RIGHT_PIN) == 0:  # Next question
             current_index = (current_index + 1) % len(questions)
-            current_question = questions[current_index]
-            display_text(current_question)
+            current_id, current_text = questions[current_index]
+            display_text(current_text)
             while GPIO.input(KEY_RIGHT_PIN) == 0:
                 pass
 
         elif GPIO.input(KEY2_PIN) == 0:  # Mark question as answered
-            mark_question_answered(current_question)
+            mark_question_answered(current_id)  # Use ID
             display_text("Marked as answered!")
             while GPIO.input(KEY2_PIN) == 0:
                 pass
-            current_question = get_random_question()
-            display_text(current_question)
+            current_id, current_text = get_random_question()
+            display_text(current_text)
 
-        elif GPIO.input(KEY3_PIN) == 0:  # Double press to reset questions
+        elif GPIO.input(KEY3_PIN) == 0:  # Reset questions
             time.sleep(0.3)
             if GPIO.input(KEY3_PIN) == 0:  # If still pressed, reset DB
                 reset_questions()
                 display_text("All questions reset!")
                 while GPIO.input(KEY3_PIN) == 0:
                     pass
-                current_question = get_random_question()
-                display_text(current_question)
+                current_id, current_text = get_random_question()
+                display_text(current_text)
+
 
 if __name__ == "__main__":
     main()
