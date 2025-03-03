@@ -136,14 +136,14 @@ def main():
             current_id, current_text = get_random_question()
             display_text(current_text)
 
-        elif GPIO.input(KEY3_PIN) == 0:  # Reset questions (long press)
-            if is_long_press(KEY3_PIN, hold_time=1.5):
+        elif GPIO.input(KEY1_PIN) == 0:  # Reset questions (long press)
+            if is_long_press(KEY1_PIN, hold_time=1.5):
                 reset_questions()
                 questions = get_all_questions()  # Reload from DB
                 current_index = 0
                 current_id, current_text = questions[current_index]
                 display_text(f"Reset done! {len(questions)} questions available.")
-                while GPIO.input(KEY3_PIN) == 0:
+                while GPIO.input(KEY1_PIN) == 0:
                     pass
 
 
