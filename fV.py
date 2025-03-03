@@ -98,21 +98,6 @@ def reset_questions():
     conn.commit()
     conn.close()
 
-def detect_reset_sequence():
-    """Waits for the reset key sequence: KEY3 -> KEY1 -> KEY3"""
-    sequence = []
-    expected_sequence = [KEY3_PIN, KEY1_PIN, KEY3_PIN]
-    
-    while len(sequence) < 3:
-        for button in expected_sequence:
-            if GPIO.input(button) == 0:  # Button pressed
-                sequence.append(button)
-                while GPIO.input(button) == 0:  # Wait for release
-                    pass
-                if sequence != expected_sequence[:len(sequence)]:  
-                    return False  # Abort if wrong sequence detected
-
-    return True  # Full sequence matched
 
 def main():
     global current_index
@@ -152,15 +137,14 @@ def main():
             current_id, current_text = get_random_question()
             display_text(current_text)
 
-        elif GPIO.input(KEY3_PIN) == 0:  # Check for reset sequence
-            if detect_reset_sequence():
-                reset_questions()
-                questions = get_all_questions()  # Reload after reset
-                current_index = 0
-                current_id, current_text = questions[current_index]
-                display_text("All questions reset!")
-                while GPIO.input(KEY3_PIN) == 0:  # Wait for release
-                    pass
+        elif GPIO.input(KEY3_PIN) == 0:  # Reset questions on single press
+            reset_questions()
+            questions = get_all_questions()  # Reload questions
+            current_index = 0
+            current_id, current_text = questions[current_index]
+            display_text("All questions reset!")
+            while GPIO.input(KEY3_PIN) == 0:  # Wait for release
+                pass
 
 
 if __name__ == "__main__":
