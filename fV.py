@@ -139,10 +139,11 @@ def main():
 
         elif GPIO.input(KEY3_PIN) == 0:  # Reset questions on single press
             reset_questions()
-            questions = get_all_questions()  # Reload questions
-            current_index = 0
-            current_id, current_text = questions[current_index]
             display_text("All questions reset!")
+            time.sleep(2)  # Show message for 2 seconds
+            
+            # Return to main page
+            display_text("Forced Vulnerability\n\n\nPress any button to start")
             while GPIO.input(KEY3_PIN) == 0:  # Wait for release
                 pass
 
