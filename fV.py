@@ -44,7 +44,7 @@ disp.LCD_Init(Lcd_ScanDir)
 disp.LCD_Clear()
 
 # Load font
-font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 14)
+font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 10)
 
 # Button setup
 GPIO.setmode(GPIO.BCM)
