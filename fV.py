@@ -24,12 +24,12 @@ db_file = "questions.db"
 def get_random_question():
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
-    cursor.execute("SELECT number, question FROM questions WHERE answered = 0 ORDER BY RANDOM() LIMIT 1")
+    cursor.execute("SELECT topic, question FROM questions WHERE answered = 0 ORDER BY RANDOM() LIMIT 1")
     result = cursor.fetchone()
     conn.close()
     
     if result:
-        return f"({result[0]})\n{result[1]}"  # Format: (Topic) Question
+        return f"({result[0]}) {result[1]}"  # Format: (Topic) Question
     else:
         return "No more questions!"
 
@@ -48,7 +48,7 @@ disp.LCD_Init(Lcd_ScanDir)
 disp.LCD_Clear()
 
 # Load font
-font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf", 12)
+font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf", 10)
 
 # Button setup
 GPIO.setmode(GPIO.BCM)
